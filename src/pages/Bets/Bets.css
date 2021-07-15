@@ -1,0 +1,18 @@
+.bets-grid-container {
+    display: grid;
+    grid-template-columns: 33% 33% 33%;
+    grid-template-rows: auto;
+    grid-template-areas: "pop all exst";
+}
+
+.all-bets {
+    grid-area: all;
+}
+
+.popular-bets {
+    grid-area: pop;
+}
+
+.existing-bets {
+    grid-area: exst;
+}

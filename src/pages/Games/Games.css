@@ -1,0 +1,22 @@
+.games-grid-container {
+    display: grid;
+    grid-template-columns: 20% 20% 20% 20% 20%;
+    grid-template-rows: auto;
+    grid-template-areas: "now now . coming coming";
+}
+
+.playing-now {
+    grid-area: now;
+}
+
+.up-coming {
+    grid-area: coming;
+}
+
+.toolbar-title {
+    flex: 1 1 100%;
+}
+
+.toolbar-filter {
+    float: right;
+}
