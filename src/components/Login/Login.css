@@ -1,0 +1,38 @@
+:root {
+    --blurple: #5865f2;
+}
+
+.login-button {
+    width: 100%;
+    border-width: 0.5em;
+    border-style: solid;
+    border-color: var(--blurple);
+
+    color: var(--blurple);
+    background-color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    transition: background 0.11s;
+}
+
+.login-button:hover,
+.login-button:hover > * path {
+    color: white;
+    fill: white;
+    stroke: white;
+    border-color: white;
+    background-color: var(--blurple);
+}
+
+.login-button-icon {
+    flex: 0 0 0%;
+}
+
+.login-button-text {
+    font-size: 1em;
+    font-weight: bolder;
+    flex: 1 1 100%;
+    vertical-align: middle;
+}

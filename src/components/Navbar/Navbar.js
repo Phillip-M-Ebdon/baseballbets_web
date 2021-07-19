@@ -18,18 +18,21 @@ import {
 import { SportsBaseballTwoTone as GamesIcon } from '@material-ui/icons';
 import { EqualizerTwoTone as LadderIcon } from '@material-ui/icons';
 import { AssessmentTwoTone as BoardsIcon } from '@material-ui/icons';
-import { ExitToAppTwoTone as LoginIcon } from '@material-ui/icons';
 import { LocalAtmTwoTone as BettingIcon } from "@material-ui/icons";
 
 import logo from "../../images/baseball.svg"
 import "./Navbar.css"
+import Login from '../Login';
+import { MLBApi } from '../../api/MLBApi';
 
 export const Navbar = () => {
 
+    const api = new MLBApi();
     const [user, setUser] = useContext(UserContext);
 
-    const logout = (e) => {
+    const logout = async (e) => {
         e.preventDefault()
+        await api.logout()
         setUser(null);
     }
 
@@ -53,12 +56,12 @@ export const Navbar = () => {
                 <img src={logo}/>
             </Link>
             <Divider />
-            <List>
-                {
+            {
                 // if logged in show profile, otherwise show login option
                 !user ? (
                     
-                    <ListItemLink to="login" text="Login" icon={<LoginIcon />} />
+                    // <ListItemLink to="login" text="Login" icon={<LoginIcon />} />
+                    <Login />
                     
                 ) : (
                     
@@ -69,7 +72,9 @@ export const Navbar = () => {
                     
                 )
                 }
-
+            <Divider /> 
+            <List>
+                
                 <ListItemLink to="/games" text="Games" icon={<GamesIcon />}/>
             
                 <ListItemLink to="/ladder" text="MLB Ladder" icon={<LadderIcon />}/>

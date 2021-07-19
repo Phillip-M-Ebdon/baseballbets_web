@@ -1,3 +1,5 @@
+import { useContext } from "react"
+import { UserContext } from "../../context/User/User" 
 import {
     createTheme,
     ThemeProvider,
@@ -15,11 +17,13 @@ homeTheme.typography.h1 = {
 
 const Home = () => {
 
+    const [user, setUser] = useContext(UserContext);
+
     return (
         <div>
             <ThemeProvider theme={homeTheme}>
                 <Typography component="h1" variant="h1">
-                    Welcome to Baseball Bets
+                    Welcome to Baseball Bets { user ? user.username : "" }
                 </Typography>
             </ThemeProvider>
         </div>

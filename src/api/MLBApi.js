@@ -1,4 +1,4 @@
-import axios from "axios";
+import { api } from "./baseInstance"
 
 export class MLBApi {
 
@@ -6,22 +6,42 @@ export class MLBApi {
         baseURL: "http://localhost:4000/api",
     });
 
-    /**
+   /**
      * Fetch the ladder, consisting of teams with their total wins, loses, and their wins/loses in last ten games
      * includes names
      */
-    getLadder = () => {
-        this.api.get({
-            url: "ladder"
-        })
+    // getLadder = () => {
+    //     this.api.get({
+    //         url: "ladder"
+    //     })
+    // }
+    connection = api;
+
+    logout = async () => {
+        try {
+            const res = await this.connection.delete("/api/auth/logout");
+            return res.data;
+        } catch (e) {
+            return null;
+        }
     }
 
-    getTeams = () => {
-        this.api.get({
-            url: "teams"
-        })
-    }
-
+    getUser = async () => {
+        try {
+            const res = await this.connection.get("/api/users/me")
+            if (res.status === 200) {
+                console.log(res)
+                // returned user, provide data
+                return res.data;
+            } else {
+                // not logged in or other error
+                return null
+            }
+        } catch (e) {
+            console.log(e)
+            return null
+        }
+        
     getActiveGames = () => {
         this.api.get({
             url: "games/playing"

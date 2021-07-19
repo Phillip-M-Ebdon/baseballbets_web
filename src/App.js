@@ -1,4 +1,4 @@
-import React, { useState } from "react"
+import React, { useState, useEffect } from "react"
 import { 
   BrowserRouter,
   Route, 
@@ -6,13 +6,23 @@ import {
 } from 'react-router-dom'
 import { Navbar, Footer } from './components';
 import { UserContext } from "./context/User/User"
-import { Home, Games, Bets, Ladder, Boards, Profile, Login} from './pages/index';
-
+import { Home, Games, Bets, Ladder, Boards, Profile } from './pages/index';
+import { MLBApi } from "./api/MLBApi";
 import "./App.css"
 
 const App = () => {
 
-  const [user, setUser] = useState(null)
+  const [user, setUser] = useState(null);
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      const api = new MLBApi();
+      const newUser = await api.getUser();
+      console.log(newUser)
+      setUser(newUser);
+    }
+    fetchUser();
+  }, [])
 
   return (
     <BrowserRouter>
@@ -22,9 +32,6 @@ const App = () => {
         <Switch >
             <Route exact path="/">
               <Home />
-            </Route>
-            <Route path="/login">
-              <Login />
             </Route>
             <Route path="/profile">
               <Profile />
