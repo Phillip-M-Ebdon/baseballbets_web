@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
     TableContainer,
     Table,
@@ -10,45 +10,38 @@ import {
 } from "@material-ui/core"
 
 import "./Ladder.css"
+import { MLBApi } from "../../api/MLBApi";
+
+const winsRegx = /[W]/g;
+
 
 export const LadderTable = () => {
-    const teams = [
-        {
-            "name": "A",
-            "wins": 23,
-            "loses": 17,
-            "wins10": 5,
-            "loses10": 5
-        },
-        {
-            "name": "B",
-            "wins": 17,
-            "loses": 23,
-            "wins10": 8,
-            "loses10": 2
-        },
-        {
-            "name": "C",
-            "wins": 20,
-            "loses": 20,
-            "wins10": 2,
-            "loses10": 8
-        },
-        {
-            "name": "D",
-            "wins": 29,
-            "loses": 11,
-            "wins10": 9,
-            "loses10": 1
-        },
-        {
-            "name": "E",
-            "wins": 5,
-            "loses": 35,
-            "wins10": 0,
-            "loses10": 10
+    const api = new MLBApi();
+
+    const [teams, setTeams] = useState([]);
+    useEffect(() => {
+
+        const fetchData = async () => {
+            const results = await api.getTeams();
+            const allData = results;
+
+            let newLadder = [];
+            for (const data of allData) {
+                console.log(data.lastTen.match(winsRegx), data.lastTen.match(winsRegx).length)
+
+                newLadder.push({
+                    id: data.id,
+                    name: data.name,
+                    wins: data.wins,
+                    loses: data.loses,
+                    wins10: data.lastTen.match(winsRegx).length,
+                    loses10: 10 - data.lastTen.match(winsRegx).length
+                })
+            }
+            setTeams(newLadder);
         }
-    ];
+        fetchData();
+    }, [])
 
     const [order, setOrder] = useState('desc');
     const [orderBy, setOrderBy] = useState("wins");
@@ -64,7 +57,6 @@ export const LadderTable = () => {
     }
 
     const recentResults = (team) => {
-        console.log(team)
         return `${team["wins10"]}-${team["loses10"]}`
     }
 
@@ -74,7 +66,6 @@ export const LadderTable = () => {
 
     const handleSort = (event, property) => {
         const isDesc = orderBy === property && order === 'desc';
-        console.log(property)
         setOrder(isDesc ? 'asc' : 'desc');
         setOrderBy(property);
     }
@@ -83,7 +74,6 @@ export const LadderTable = () => {
         const stableList = teams.map((el, index) => [el, index]);
         stableList.sort((a, b) => {
             const order = comparator(a[0], b[0]);
-            console.log(order)
             if (order !== 0) return order;
             return a[1] - b[1];
         });

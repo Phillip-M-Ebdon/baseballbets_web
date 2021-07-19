@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
     Paper,
     Toolbar,
@@ -16,44 +16,53 @@ import {
 } from "@material-ui/core"
 import ClearTwoToneIcon from '@material-ui/icons/ClearTwoTone';
 
+import { MLBApi } from "../../api/MLBApi";
 import { TeamFilter } from "./TeamFilter"
 
+import { Spinner } from "../../components/Spinner";
+import spinnerIcon from "../../images/bat.svg"
 
 export const UpComing = () => {
-    const games = [
-        {
-            "home": {
-                "team": "A"
-            },
-            "away": {
-                "team": "B"
-            },
-            "scheduled": "2021-03-28T17:05:00Z",
-        },
-        {
-            "home": {
-                "team": "B"
-            },
-            "away": {
-                "team": "C"
-            },
-            "scheduled": "2021-03-28T17:05:00Z",
-        },
-    ];
 
-    const [order, setOrder] = useState('desc');
+    const api = new MLBApi();
+    const [games, setGames] = useState([]);
+    const [order, setOrder] = useState('asc');
     const [orderBy, setOrderBy] = useState("wins");
+    const [total, setTotal] = useState(0);
     const [page, setPage] = useState(0);
     const [gamesPerPage, setGamesPerPage] = useState(5);
     const [teamFilter, setTeamFilter] = useState(null);
 
+    const [loadingTable, setLoading] = useState(true);
+    
+    useEffect(async () => {
+        const fetchData = async () => {
+            const UpComing = await api.getGames("S", page*gamesPerPage, gamesPerPage, order.toLocaleUpperCase(), teamFilter)
+            setGames(UpComing.page);
+            setTotal(UpComing.count);
+        }
+        fetchData();
+        setLoading(false);
+    }, [page, gamesPerPage, teamFilter, order])
+
+
     function compare (a, b, orderBy) {
-        if (a[orderBy] > b[orderBy]) return -1;
-        if (a[orderBy] < b[orderBy]) return 1;
+        if (a[orderBy] > b[orderBy]) return 1;
+        if (a[orderBy] < b[orderBy]) return -1;
+        return 0;
+    }
+
+    function timeCompare (a, b) {
+        console.log(new Date(a.start), new Date(b.start))
+        if (new Date(a.start) < new Date(b.start)) return -1;
+        if (new Date(a.start) > new Date(b.start)) return 1;
         return 0;
     }
 
     function getComparator (order, orderBy) {
+        if (orderBy === "time") {
+            return order === "desc" ? (a, b) => timeCompare(a, b) : (a, b) => -timeCompare(a, b) 
+        }
         return order === "desc" ? (a, b) => compare(a, b, orderBy) : (a, b) => -compare(a, b, orderBy)
     }
 
@@ -63,16 +72,14 @@ export const UpComing = () => {
 
     const handleSort = (event, property) => {
         const isDesc = orderBy === property && order === 'desc';
-        console.log(property)
         setOrder(isDesc ? 'asc' : 'desc');
         setOrderBy(property);
     }
     
-    function sortGames(teams, comparator) {
-        const stableList = teams.map((el, index) => [el, index]);
+    function sortGames(games, comparator) {
+        const stableList = games.map((el, index) => [el, index]);
         stableList.sort((a, b) => {
             const order = comparator(a[0], b[0]);
-            console.log(order)
             if (order !== 0) return order;
             return a[1] - b[1];
         });
@@ -142,7 +149,14 @@ export const UpComing = () => {
                 }
         </Toolbar>
 
-
+        {
+            loadingTable 
+            ? 
+            <> 
+                <Spinner spinnerIcon={spinnerIcon}/>
+            </>
+            :
+               
           <TableContainer>
             <Table>
                 <TableHead>
@@ -164,26 +178,27 @@ export const UpComing = () => {
                         ))}
                     </TableRow>
                 </TableHead>
+               
                 <TableBody>
                     {
                         filterByTeam(sortGames(games, getComparator(order, orderBy)))
-                        .slice(page * gamesPerPage, page * gamesPerPage + gamesPerPage)
+                        //.slice(page * gamesPerPage, page * gamesPerPage + gamesPerPage)
                         .map((game) => (
                             <TableRow>
                                 <TableCell align="center">
                                     {
-                                     game.home.logo ? <img src={game.home.logo}/> : null
+                                     game.home.logo ? <img src={`https://www.mlbstatic.com/team-logos/${game.home.id}`}/> : null
                                     }
-                                    {game.home.team}
+                                    {game.home.name}
                                 </TableCell>
                                 <TableCell align="center">                                    
-                                    {game.away.team}
+                                    {game.away.name}
                                     {
-                                     game.away.logo ? <img src={game.away.logo}/> : null
+                                     game.away.logo ? <img src={`https://www.mlbstatic.com/team-logos/${game.away.id}`}/> : null
                                     }
                                 </TableCell>
                                 <TableCell align="center">
-                                    {convertDate(game.scheduled)}
+                                    {convertDate(game.start)}
                                 </TableCell>
                             </TableRow>
                         ))
@@ -191,10 +206,11 @@ export const UpComing = () => {
                 </TableBody>
             </Table>
           </TableContainer>
+        }
           <TablePagination 
             rowsPerPageOptions={[5, 10, 20]}
             component="div"
-            count={games.length}
+            count={total}
             rowsPerPage={gamesPerPage}
             page={page}
             onPageChange={handlePageChange}
