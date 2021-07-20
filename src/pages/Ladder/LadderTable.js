@@ -34,6 +34,7 @@ export const LadderTable = () => {
                     name: data.name,
                     wins: data.wins,
                     loses: data.loses,
+                    per: data.wins / data.loses,
                     wins10: data.lastTen.match(winsRegx).length,
                     loses10: 10 - data.lastTen.match(winsRegx).length
                 })
@@ -49,11 +50,43 @@ export const LadderTable = () => {
     function compare (a, b, orderBy) {
         if (a[orderBy] > b[orderBy]) return -1;
         if (a[orderBy] < b[orderBy]) return 1;
+        // backup percentage check
+        if (a["per"] > b["per"]) return -1;
+        if (a["per"] < b["per"]) return 1;
+        return 0;
+    }
+
+    function compareRecent (a, b, orderBy) {
+        if (parseInt(a[orderBy][0]) > parseInt(b[orderBy][0])) return -1;
+        if (parseInt(a[orderBy][0]) < parseInt(b[orderBy][0])) return 1;
+
+        if (a["per"] > b["per"]) return -1;
+        if (a["per"] < b["per"]) return 1;
+
+        if (a["wins"] > b["wins"]) return -1;
+        if (a["wins"] < b["wins"]) return 1;
+
+        return 0;
+    }
+
+    function comparePercent (a, b, orderBy) {
+        if (a[orderBy] > b[orderBy]) return -1;
+        if (a[orderBy] < b[orderBy]) return 1;
         return 0;
     }
 
     function getComparator (order, orderBy) {
-        return order === "desc" ? (a, b) => compare(a, b, orderBy) : (a, b) => -compare(a, b, orderBy)
+        console.log(orderBy)
+        switch (orderBy) {
+            case "recent":
+                return order === "desc" ? (a, b) => compareRecent(a, b, orderBy) : (a, b) => -compareRecent(a, b, orderBy)
+            
+            case "per":
+                return order === "desc" ? (a, b) => comparePercent(a, b, orderBy) : (a, b) => -comparePercent(a, b, orderBy)
+            
+            default:
+                return order === "desc" ? (a, b) => compare(a, b, orderBy) : (a, b) => -compare(a, b, orderBy)
+        }
     }
 
     const recentResults = (team) => {
@@ -84,7 +117,8 @@ export const LadderTable = () => {
         { id: 'team', numeric: false, disablePadding: true, label: 'Team' },
         { id: 'wins', numeric: true, disablePadding: false, label: 'Wins' },
         { id: 'loses', numeric: true, disablePadding: false, label: 'Loses' },
-        { id: 'recent', numeric: true, disablePadding: false, label: 'Last 10' },
+        { id: 'per', numeric: true, disablePadding: false, label: 'Percent' },
+        { id: 'wins10', numeric: true, disablePadding: false, label: 'Last 10' },
       ];
 
       return (
@@ -124,6 +158,9 @@ export const LadderTable = () => {
                                 </TableCell>
                                 <TableCell>
                                     {team.loses}
+                                </TableCell>
+                                <TableCell>
+                                    {(team.wins / team.loses).toFixed(2)}
                                 </TableCell>
                                 <TableCell>
                                     {recentResults(team)}
