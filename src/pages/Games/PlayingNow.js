@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
     Paper,
     Toolbar,
@@ -13,27 +13,31 @@ import {
     TablePagination
 } from "@material-ui/core"
 
+import { MLBApi } from "../../api/MLBApi";
+
 
 export const PlayingNow = () => {
-    const games = [
-        {
-            "home": {
-                "team": "A",
-                "score": 3
-            },
-            "away": {
-                "team": "B",
-                "score": 2
-            },
-            "inning": 4,
-            "started": "2021-03-28T17:05:00Z",
-        },
-    ];
-
-    const [order, setOrder] = useState('desc');
+    const api = new MLBApi();
+    const [games, setGames] = useState([]);
+    const [order, setOrder] = useState('asc');
     const [orderBy, setOrderBy] = useState("wins");
+    const [total, setTotal] = useState(0);
     const [page, setPage] = useState(0);
     const [gamesPerPage, setGamesPerPage] = useState(5);
+
+    const [loadingTable, setLoading] = useState(true);
+    
+    useEffect(async () => {
+        const fetchData = async () => {
+            const playingNow = await api.getGames("I", page*gamesPerPage, gamesPerPage, order.toLocaleUpperCase())
+            console.log(playingNow)
+
+            setGames(playingNow.page);
+            setTotal(playingNow.count);
+        }
+        fetchData();
+        setLoading(false);
+    }, [page, gamesPerPage, order])
 
     function compare (a, b, orderBy) {
         if (a[orderBy] > b[orderBy]) return -1;
@@ -128,16 +132,16 @@ export const PlayingNow = () => {
                                     {
                                      game.home.logo ? <img src={game.home.logo}/> : null
                                     }
-                                    {game.home.team}
+                                    {game.home.name}
                                 </TableCell>
                                 <TableCell align="left">
-                                    {game.home.score}
+                                    {game.homeScore}
                                 </TableCell>
                                 <TableCell align="right">
-                                    {game.away.score}
+                                    {game.awayScore}
                                 </TableCell>
                                 <TableCell align="center">                                    
-                                    {game.away.team}
+                                    {game.away.name}
                                     {
                                      game.away.logo ? <img src={game.away.logo}/> : null
                                     }
@@ -146,7 +150,7 @@ export const PlayingNow = () => {
                                     {game.inning}
                                 </TableCell>
                                 <TableCell align="center">
-                                    {convertDate(game.started)}
+                                    {convertDate(game.start)}
                                 </TableCell>
                             </TableRow>
                         ))
@@ -157,7 +161,7 @@ export const PlayingNow = () => {
           <TablePagination 
           rowsPerPageOptions={[5, 10, 20]}
           component="div"
-          count={games.length}
+          count={total}
           rowsPerPage={gamesPerPage}
           page={page}
           onPageChange={handlePageChange}

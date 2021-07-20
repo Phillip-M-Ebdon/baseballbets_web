@@ -37,9 +37,9 @@ export const UpComing = () => {
     
     useEffect(async () => {
         const fetchData = async () => {
-            const UpComing = await api.getGames("S", page*gamesPerPage, gamesPerPage, order.toLocaleUpperCase(), teamFilter)
-            setGames(UpComing.page);
-            setTotal(UpComing.count);
+            const upComing = await api.getGames("S", page*gamesPerPage, gamesPerPage, order.toLocaleUpperCase(), teamFilter)
+            setGames(upComing.page);
+            setTotal(upComing.count);
         }
         fetchData();
         setLoading(false);
